@@ -3,11 +3,15 @@ project(VeryEmulator)
 
 add_subdirectory(vendored/SDL EXCLUDE_FROM_ALL)
 add_subdirectory(vendored/IMGUI EXCLUDE_FROM_ALL)
-add_subdirectory(Foundation EXCLUDE_FROM_ALL)
+add_subdirectory(foundation EXCLUDE_FROM_ALL)
 add_subdirectory(render)
 
 # Create your game executable target as usual
-add_executable(VeryEmulator WIN32 core/VeryEmulator.cpp)
+include_directories(core/inc)
+file(GLOB SOURCE_FILES
+    core/src/*.cpp
+)
+add_executable(VeryEmulator WIN32 ${SOURCE_FILES})
 
 # SDL2::SDL2main may or may not be available. It is e.g. required by Windows GUI applications
 if(TARGET SDL2::SDL2main)
@@ -19,3 +23,6 @@ endif()
 target_link_libraries(VeryEmulator PRIVATE SDL2::SDL2)
 target_link_libraries(VeryEmulator PRIVATE IMGUI)
 target_link_libraries(VeryEmulator PRIVATE Render)
+target_link_libraries(VeryEmulator PRIVATE Foundation)
+
+target_compile_features(VeryEmulator PUBLIC cxx_std_17)

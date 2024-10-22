@@ -4,6 +4,7 @@
 #include "imgui.h"
 #include "imgui_impl_sdl2.h"
 #include "imgui_impl_opengl3.h"
+#include "Renderer.h"
 
 bool quitting = false;
 void PollEvents()
@@ -58,7 +59,7 @@ SDLMAIN_DECLSPEC int SDL_main(int argc, char *argv[])
 	}
 
     SDL_GL_MakeCurrent(m_window, m_glContext);
-    SDL_GL_SetSwapInterval(1); // Enable vsync
+    SDL_GL_SetSwapInterval(0); // Enable vsync
 
 	if ( !gladLoadGLLoader( SDL_GL_GetProcAddress ) )
 	{
@@ -84,6 +85,9 @@ SDLMAIN_DECLSPEC int SDL_main(int argc, char *argv[])
 	// Log( "GL_VENDOR:   %s", glGetString( GL_VENDOR ) );
 	// Log( "GL_RENDERER: %s", glGetString( GL_RENDERER ) );
 	// Log( "GL_VERSION:  %s", glGetString( GL_VERSION ) );
+
+    Renderer *renderer = new Renderer();
+    renderer->Initialize();
 
 	bool show_demo_window;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
@@ -121,8 +125,11 @@ SDLMAIN_DECLSPEC int SDL_main(int argc, char *argv[])
 		// clear default framebuffer
         ImGui::Render();
        	glClearColor( clear_color.x, clear_color.y, clear_color.z, clear_color.w );
-        glViewport( 0, 0, winWidth, winHeight );
         glClear( GL_COLOR_BUFFER_BIT );
+
+        renderer->DisplayFrame();
+
+        glViewport( 0, 0, winWidth, winHeight );
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
       	SDL_GL_SwapWindow( m_window );
     }
