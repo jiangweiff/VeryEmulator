@@ -3,6 +3,7 @@ project(VeryEmulator)
 
 add_subdirectory(vendored/SDL EXCLUDE_FROM_ALL)
 add_subdirectory(vendored/IMGUI EXCLUDE_FROM_ALL)
+add_subdirectory(Foundation EXCLUDE_FROM_ALL)
 add_subdirectory(render)
 
 # Create your game executable target as usual
