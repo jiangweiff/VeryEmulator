@@ -59,7 +59,7 @@ SDLMAIN_DECLSPEC int SDL_main(int argc, char *argv[])
 	}
 
     SDL_GL_MakeCurrent(m_window, m_glContext);
-    SDL_GL_SetSwapInterval(0); // Enable vsync
+    SDL_GL_SetSwapInterval(1); // Enable vsync
 
 	if ( !gladLoadGLLoader( SDL_GL_GetProcAddress ) )
 	{
