@@ -94,8 +94,8 @@ SDLMAIN_DECLSPEC int SDL_main(int argc, char *argv[])
 
     Nes* nes = new Nes();
     nes->Initialize();
-    // nes->LoadGame("Roms/Contra (U).nes");
-    nes->LoadGame("Roms/nestest.nes");
+    nes->LoadGame("Roms/Contra (U).nes");
+    // nes->LoadGame("Roms/nestest.nes");
 
 	bool show_demo_window;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);

@@ -915,7 +915,7 @@ uint8_t NesCPU::BRK()
     stkp--;
     SetFlag(B, false);
 
-    pc = read(0xFFFE) | (read(0xFFFF) << 8);
+    pc = (uint16_t)read(0xFFFE) | ((uint16_t)read(0xFFFF) << 8);
     return 0;
 }
 
@@ -977,9 +977,9 @@ uint8_t NesCPU::CLV()
 uint8_t NesCPU::CMP()
 {
     fetch();
-    temp = a - fetched;
+    temp = (uint16_t)a - (uint16_t)fetched;
     SetFlag(C, a >= fetched);
-    SetFlag(Z, temp == 0);
+    SetFlag(Z, (temp & 0x00FF) == 0x0000);
     SetFlag(N, (temp & 0x0080) > 0);
     return 1;
 }
@@ -990,9 +990,9 @@ uint8_t NesCPU::CMP()
 uint8_t NesCPU::CPX()
 {
     fetch();
-    temp = x - fetched;
+    temp = (uint16_t)x - (uint16_t)fetched;
     SetFlag(C, x >= fetched);
-    SetFlag(Z, temp == 0);
+    SetFlag(Z, (temp & 0x00FF) == 0x0000);
     SetFlag(N, temp & 0x0080);
     return 0;
 }
@@ -1003,9 +1003,9 @@ uint8_t NesCPU::CPX()
 uint8_t NesCPU::CPY()
 {
     fetch();
-    temp = y - fetched;
+    temp = (uint16_t)y - (uint16_t)fetched;
     SetFlag(C, y >= fetched);
-    SetFlag(Z, temp == 0);
+    SetFlag(Z, (temp & 0x00FF) == 0x0000);
     SetFlag(N, temp & 0x0080);
     return 0;
 }
@@ -1018,7 +1018,7 @@ uint8_t NesCPU::DEC()
     fetch();
     temp = fetched - 1;
     write(addr_abs, temp & 0x00FF);
-    SetFlag(Z, temp == 0);
+    SetFlag(Z, (temp & 0x00FF) == 0x0000);
     SetFlag(N, temp & 0x0080);
     return 0;
 }
@@ -1065,7 +1065,7 @@ uint8_t NesCPU::INC()
     fetch();
     temp = fetched + 1;
     write(addr_abs, temp & 0x00FF);
-    SetFlag(Z, temp == 0);
+    SetFlag(Z, (temp & 0x00FF) == 0x0000);
     SetFlag(N, temp & 0x0080);
     return 0;
 }
@@ -1238,9 +1238,9 @@ uint8_t NesCPU::PLP()
 uint8_t NesCPU::ROL()
 {
     fetch();
-    temp = (fetched << 1) | GetFlag(C);
+    temp = (uint16_t)(fetched << 1) | GetFlag(C);
     SetFlag(C, temp & 0xFF00);
-    SetFlag(Z, temp == 0);
+    SetFlag(Z, (temp & 0x00FF) == 0x0000);
     SetFlag(N, temp & 0x0080);
     if (opLookup[opcode].addrmode == &NesCPU::IMP) {
         a = temp & 0x00FF;
@@ -1252,9 +1252,9 @@ uint8_t NesCPU::ROL()
 uint8_t NesCPU::ROR()
 {
     fetch();
-    temp = (fetched >> 1) | (GetFlag(C) << 7);
+    temp = (fetched >> 1) | (uint16_t)(GetFlag(C) << 7);
     SetFlag(C, fetched & 0x01);
-    SetFlag(Z, temp == 0);
+    SetFlag(Z, (temp & 0x00FF) == 0x00);
     SetFlag(N, temp & 0x0080);
     if (opLookup[opcode].addrmode == &NesCPU::IMP) {
         a = temp & 0x00FF;
@@ -1272,7 +1272,7 @@ uint8_t NesCPU::RTI()
     stkp++;
     pc = read(0x0100 + stkp);
     stkp++;
-    pc |= read(0x0100 + stkp) << 8;
+    pc |= (uint16_t)read(0x0100 + stkp) << 8;
     return 0;
 }
 uint8_t NesCPU::RTS()
@@ -1280,7 +1280,7 @@ uint8_t NesCPU::RTS()
     stkp++;
     pc = read(0x0100 + stkp);
     stkp++;
-    pc |= read((0x0100 + stkp)) << 8;
+    pc |= (uint16_t)read((0x0100 + stkp)) << 8;
     pc++;
     return 0;
 }
@@ -1318,7 +1318,7 @@ uint8_t NesCPU::SBC()
     
     temp = a + value + GetFlag(C);
     SetFlag(C, temp & 0xFF00);
-    SetFlag(Z, temp == 0);
+    SetFlag(Z, (temp & 0x00FF) == 0x00);
     SetFlag(V, (temp ^ a) & (temp ^ value) & 0x0080);
     SetFlag(N, temp & 0x0080);
     a = temp & 0x00FF;
