@@ -7,7 +7,7 @@ class NesRom;
 
 class Nes : EmulatorBase
 {
-private:
+public:
     NesBus* bus;
     NesRom* rom;
 

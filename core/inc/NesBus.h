@@ -10,7 +10,7 @@ public:
     NesCPU* cpu;
     NesPPU* ppu;
     NesRom* rom;
-    uint8_t cpuRam[2048];
+    uint8_t cpuRam[2048] = {0};
     uint8_t controller[2];
 
     uint32_t sysClockCounter = 0;

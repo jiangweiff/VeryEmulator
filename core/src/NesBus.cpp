@@ -84,6 +84,7 @@ bool NesBus::loadRom(NesRom* rom)
 void NesBus::reset()
 {
     cpu->Reset();
+    ppu->reset();
     sysClockCounter = 0;
 }
 void NesBus::clock()

@@ -73,15 +73,6 @@ public:
         this->bus = bus;
     }
 
-    std::string hex(uint32_t n, uint8_t d)
-    {
-        std::string s('0', d);
-        auto arr = s.data();
-        for (int i = d - 1; i >= 0; i--, n >>= 4)
-            arr[i] = "0123456789ABCDEF"[(int)(n & 0xF)];
-        return std::string(arr);
-    };
-
     // This is the disassembly function. Its workings are not required for emulation.
     // It is merely a convenience function to turn the binary instruction code into
     // human readable form. Its included as part of the emulator because it can take
@@ -89,16 +80,8 @@ public:
     std::map<uint16_t, std::string> Disassemble(uint16_t nStart, uint16_t nStop);
     void Reset();
 
-    uint8_t read(uint16_t a, bool bReadOnly = false)
-    {
-        return 0;
-        // return bus.cpuRead(a, bReadOnly);
-    }
-
-    void write(uint16_t a, uint8_t d)
-    {
-        // bus.cpuWrite(a,d);
-    }
+    uint8_t read(uint16_t a, bool bReadOnly = false);
+    void write(uint16_t a, uint8_t d);
 
     uint8_t fetch();
     void doBranch();

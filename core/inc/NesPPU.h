@@ -7,9 +7,9 @@ class NesRom;
 class NesPPU
 {
 private:		
-	uint8_t     tblName[2][1024];
-	uint8_t     tblPattern[2][4096];
-	uint8_t		tblPalette[32];
+	uint8_t     tblName[2][1024] = {0};
+	uint8_t     tblPattern[2][4096] = {0};
+	uint8_t		tblPalette[32] = {0};
 
 	Math::ColorRGB<uint8_t>  palScreen[0x40];
     Math::ColorRGB<uint8_t>  sprScreen[256][240];

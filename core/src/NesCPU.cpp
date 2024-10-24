@@ -1,4 +1,6 @@
 #include "NesCPU.h"
+#include "NesBus.h"
+#include "Util/Hex.h"
 
 NesCPU::NesCPU()
 {
@@ -406,6 +408,16 @@ void NesCPU::Reset()
 
     // Reset takes time
     cycles = 8;
+}
+
+uint8_t NesCPU::read(uint16_t a, bool bReadOnly)
+{
+    return bus->cpuRead(a, bReadOnly);
+}
+
+void NesCPU::write(uint16_t a, uint8_t d)
+{
+    bus->cpuWrite(a,d);
 }
 
 uint8_t NesCPU::fetch()
