@@ -330,7 +330,8 @@ class Mapper_002 : public Mapper
 public:
 	Mapper_002(uint8_t prgBanks, uint8_t chrBanks) : Mapper(prgBanks, chrBanks)
     {
-
+        nPRGBankSelectLo = 0;
+        nPRGBankSelectHi = nPRGBanks-1;
     }
 	~Mapper_002()
     {
@@ -358,6 +359,7 @@ public:
         if (addr >= 0x8000 && addr <= 0xFFFF)
         {		
             nPRGBankSelectLo = data & 0x0F;
+            return true;
         }
 
         // Mapper has handled write, but do not update ROMs
@@ -365,7 +367,7 @@ public:
     }
 	bool ppuMapRead(uint16_t addr, uint32_t &mapped_addr) override
     {
-        if (addr < 0x2000)
+        if (addr >= 0x0000 && addr < 0x2000)
         {
             mapped_addr = addr;
             return true;
@@ -375,7 +377,7 @@ public:
     }
 	bool ppuMapWrite(uint16_t addr, uint32_t &mapped_addr) override
     {
-        if (addr < 0x2000)
+        if (addr >= 0x0000 && addr < 0x2000)
         {
             if (nCHRBanks == 0) // Treating as RAM
             {

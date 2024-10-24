@@ -862,7 +862,7 @@ void NesPPU::clock()
 				// depending on the current "sprite height mode"
 				// FLAGGED
 				
-				if (diff >= 0 && diff < (control.sprite_size ? 16 : 8) && sprite_count < 8)
+				if (diff >= 0 && diff < (control.sprite_size ? 16 : 8))
 				{
 					// Sprite is visible, so copy the attribute entry over to our
 					// scanline sprite cache. Ive added < 8 here to guard the array
@@ -877,15 +877,15 @@ void NesPPU::clock()
 							bSpriteZeroHitPossible = true;
 						}
 
-						memcpy(&spriteScanline[sprite_count], &OAM[nOAMEntry], sizeof(sObjectAttributeEntry));						
-					}			
-					sprite_count++;
+						memcpy(&spriteScanline[sprite_count], &OAM[nOAMEntry], sizeof(sObjectAttributeEntry));
+                        sprite_count++;
+					}
 				}
 				nOAMEntry++;
 			} // End of sprite evaluation for next scanline
 
 			// Set sprite overflow flag
-			status.sprite_overflow = (sprite_count >= 8);
+			status.sprite_overflow = (sprite_count > 8);
 
 			// Now we have an array of the 8 visible sprites for the next scanline. By 
 			// the nature of this search, they are also ranked in priority, because
@@ -1058,7 +1058,7 @@ void NesPPU::clock()
 	// the current background colour in effect
 	if (mask.render_background)
 	{
-		if (mask.render_background_left || (cycle >= 9))
+		// if (mask.render_background_left || (cycle >= 9))
 		{
 			// Handle Pixel Selection by selecting the relevant bit
 			// depending upon fine x scolling. This has the effect of
@@ -1091,7 +1091,7 @@ void NesPPU::clock()
 		// Iterate through all sprites for this scanline. This is to maintain
 		// sprite priority. As soon as we find a non transparent pixel of
 		// a sprite we can abort
-		if (mask.render_sprites_left || (cycle >= 9))
+		// if (mask.render_sprites_left || (cycle >= 9))
 		{
 
 			bSpriteZeroBeingRendered = false;
