@@ -3,8 +3,8 @@
 NesBus::NesBus()
 {
     cpu = new NesCPU();
-    // ppu = new NesPPU();
-    // cpu.ConnectBus(this);
+    ppu = new NesPPU();
+    cpu->ConnectBus(this);
 }
 
 void NesBus::cpuWrite(uint16_t addr, uint8_t data)
@@ -48,7 +48,7 @@ void NesBus::cpuWrite(uint16_t addr, uint8_t data)
     }
 }
 
-uint8_t NesBus::cpuRead(uint16_t addr, bool bReadOnly = false)
+uint8_t NesBus::cpuRead(uint16_t addr, bool bReadOnly)
 {
     uint8_t data = 0x00;
     if (rom->cpuRead(addr, data))
@@ -77,7 +77,7 @@ uint8_t NesBus::cpuRead(uint16_t addr, bool bReadOnly = false)
 bool NesBus::loadRom(NesRom* rom)
 {
     this->rom = rom;
-    // this->ppu->loadRom(rom);
+    this->ppu->loadRom(rom);
     return true;
 }
 

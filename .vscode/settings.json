@@ -4,6 +4,7 @@
         "*.shader": "shaderlab",
         "type_traits": "cpp",
         "cstdint": "cpp",
-        "cstddef": "cpp"
+        "cstddef": "cpp",
+        "memory": "cpp"
     }
 }

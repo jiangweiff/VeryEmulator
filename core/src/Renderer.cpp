@@ -13,22 +13,19 @@ bool Renderer::Initialize()
     return true;
 }
 
+void Renderer::UpdateDisplayFrame(GLsizei width, GLsizei height, const void* pixels)
+{
+    m_displayTexture.UpdateImage(Render::InternalFormat::RGB, width, height, Render::PixelFormat::RGB, Render::PixelType::UByte, pixels);
+    // m_displayTexture.SubImage(0,0,240,240, Render::PixelFormat::RGB, Render::PixelType::UByte, m_pixels);
+}
+
 void Renderer::DisplayFrame()
 {
-    int texsize = 240*240;
-    for(int i = 0; i < texsize; ++i) {
-        uint8_t c = rand() % 255;
-        m_pixels[i*3] = m_pixels[i*3+1] = m_pixels[i*3+2] = c;
-    }
-    
-    // m_displayTexture.UpdateImage(Render::InternalFormat::RGB, 240, 240, Render::PixelFormat::RGB, Render::PixelType::UByte, m_pixels);
-    m_displayTexture.SubImage(0,0,240,240, Render::PixelFormat::RGB, Render::PixelType::UByte, m_pixels);
-
 	glDisable( GL_SCISSOR_TEST );
 	glDisable( GL_BLEND );
 	glDisable( GL_DEPTH_TEST );
 
-	glViewport( 0, 0, 240, 240 );
+	glViewport( 0, 0, m_displayTexture.GetWidth(), m_displayTexture.GetHeight() );
 	glClearColor( 0.0f, 1.0f, 0.0f, 1.0f );
 	glClear( GL_COLOR_BUFFER_BIT );
 

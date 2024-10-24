@@ -5,6 +5,7 @@
 #include "imgui_impl_sdl2.h"
 #include "imgui_impl_opengl3.h"
 #include "Renderer.h"
+#include "Nes.h"
 
 bool quitting = false;
 void PollEvents()
@@ -89,6 +90,10 @@ SDLMAIN_DECLSPEC int SDL_main(int argc, char *argv[])
     Renderer *renderer = new Renderer();
     renderer->Initialize();
 
+    Nes* nes = new Nes();
+    nes->Initialize();
+    nes->LoadGame("Roms/nestest.nes");
+
 	bool show_demo_window;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
@@ -124,10 +129,16 @@ SDLMAIN_DECLSPEC int SDL_main(int argc, char *argv[])
 
 		// clear default framebuffer
         ImGui::Render();
+
+        // run emu
+        nes->Tick();
+        
+        // render
        	glClearColor( clear_color.x, clear_color.y, clear_color.z, clear_color.w );
         glClear( GL_COLOR_BUFFER_BIT );
 
-        renderer->DisplayFrame();
+        // renderer->DisplayFrame();
+        nes->Present(renderer);
 
         glViewport( 0, 0, winWidth, winHeight );
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

@@ -42,12 +42,12 @@ class Renderer
 public:
     bool Initialize();
     void DisplayFrame();
-
+    void UpdateDisplayFrame(GLsizei width, GLsizei height, const void* pixels);
+    
 private:
     uint8_t* m_pixels;
     Render::VertexArrayObject m_noAttributeVAO;
     Render::Shader m_vramViewShader;
   	Render::Texture2D m_displayTexture;
-    
 
 };

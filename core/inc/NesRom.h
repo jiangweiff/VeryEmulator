@@ -38,7 +38,7 @@ public:
 	virtual bool ppuMapWrite(uint16_t addr, uint32_t &mapped_addr)	 = 0;
 
 	// Reset mapper to known state
-	virtual void reset() = 0;
+	virtual void reset(){};
 
 	// Get Mirror mode if mapper is in control
 	virtual MIRROR mirror() { return MIRROR::HARDWARE; }

@@ -1,9 +1,19 @@
 #pragma once
 
-#include "NesRom.h"
+#include "Math/Color.h"
+
+class NesRom;
 
 class NesPPU
 {
+private:		
+	uint8_t     tblName[2][1024];
+	uint8_t     tblPattern[2][4096];
+	uint8_t		tblPalette[32];
+
+	Math::ColorRGB<uint8_t>  palScreen[0x40];
+    Math::ColorRGB<uint8_t>  sprScreen[256][240];
+
 private:
     NesRom *rom;
 
@@ -134,6 +144,10 @@ public:
     void WritePAM(uint32_t offset, uint8_t value);
 
 public:
+    NesPPU();
+    Math::ColorRGB<uint8_t>* GetScreen() { return &sprScreen[0][0]; } 
+    Math::ColorRGB<uint8_t>& GetColourFromPaletteRam(uint8_t palette, uint8_t pixel);
+
 	// Communications with Main Bus
 	uint8_t cpuRead(uint16_t addr, bool rdonly = false);
 	void    cpuWrite(uint16_t addr, uint8_t  data);
@@ -141,7 +155,7 @@ public:
 	// Communications with PPU Bus
 	uint8_t ppuRead(uint16_t addr, bool rdonly = false);
 	void    ppuWrite(uint16_t addr, uint8_t data);
-
+  
     void loadRom(NesRom* rom)
     {
         this->rom = rom;
@@ -150,5 +164,7 @@ public:
 	void clock();
 	void reset();
 	bool nmi = false;
-	bool scanline_trigger = false;    
+	bool scanline_trigger = false;
+	bool frame_complete = false;
+
 };
