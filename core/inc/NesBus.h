@@ -11,10 +11,10 @@ public:
     NesPPU* ppu;
     NesRom* rom;
     uint8_t cpuRam[2048] = {0};
-    uint8_t controller[2];
+    uint8_t controller[2] = {0};
 
     uint32_t sysClockCounter = 0;
-	uint8_t controller_state[2];
+	uint8_t controller_state[2] = {0};
 
 	// A simple form of Direct Memory Access is used to swiftly
 	// transfer data from CPU bus memory into the OAM memory. It would

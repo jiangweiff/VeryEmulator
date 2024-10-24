@@ -67,7 +67,7 @@ uint8_t NesBus::cpuRead(uint16_t addr, bool bReadOnly)
     }
     else if (addr >= 0x4016 && addr <= 0x4017)
     {
-        data = (controller_state[addr & 0x0001] & 0x80) > 0 ? 1 : 0;
+        data = (controller_state[addr & 0x0001] & 0x80) > 0;
         controller_state[addr & 0x0001] <<= 1;
     }
 
