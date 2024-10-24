@@ -12,7 +12,7 @@ private:
 	uint8_t		tblPalette[32] = {0};
 
 	Math::ColorRGB<uint8_t>  palScreen[0x40];
-    Math::ColorRGB<uint8_t>  sprScreen[256][240];
+    Math::ColorRGB<uint8_t>  sprScreen[256*240];
 
 private:
     NesRom *rom;
@@ -145,7 +145,7 @@ public:
 
 public:
     NesPPU();
-    Math::ColorRGB<uint8_t>* GetScreen() { return &sprScreen[0][0]; } 
+    Math::ColorRGB<uint8_t>* GetScreen() { return sprScreen; } 
     Math::ColorRGB<uint8_t>& GetColourFromPaletteRam(uint8_t palette, uint8_t pixel);
 
 	// Communications with Main Bus

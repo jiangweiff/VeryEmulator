@@ -1214,7 +1214,7 @@ void NesPPU::clock()
 	// Now we have a final pixel colour, and a palette for this cycle
 	// of the current scanline. Let's at long last, draw that ^&%*er :P
     if (cycle - 1 >= 0 && cycle -1 < 256 && scanline >= 0 && scanline < 240) {
-        sprScreen[cycle - 1][scanline] = GetColourFromPaletteRam(palette, pixel);
+        sprScreen[scanline*256 + cycle - 1] = GetColourFromPaletteRam(palette, pixel);
     }
 
 	// Advance renderer - it never stops, it's relentless
