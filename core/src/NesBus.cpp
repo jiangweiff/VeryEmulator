@@ -4,6 +4,7 @@ NesBus::NesBus()
 {
     cpu = new NesCPU();
     ppu = new NesPPU();
+    apu = new NesAPU();
     cpu->ConnectBus(this);
 }
 
@@ -35,6 +36,10 @@ void NesBus::cpuWrite(uint16_t addr, uint8_t data)
         // which is the equivalent of addr % 8.
         ppu->cpuWrite(addr & 0x0007, data);
     }
+    else if ((addr >= 0x4000 && addr <= 0x4013) || addr == 0x4015 || addr == 0x4017) //  NES APU
+	{
+		apu->cpuWrite(addr, data);
+	}
     else if (addr == 0x4014)
     {
         // A write to this address initiates a DMA transfer
@@ -65,6 +70,11 @@ uint8_t NesBus::cpuRead(uint16_t addr, bool bReadOnly)
         // PPU Address range, mirrored every 8
         data = ppu->cpuRead(addr & 0x0007, bReadOnly);
     }
+   	else if (addr == 0x4015)
+	{
+		// APU Read Status
+		data = apu->cpuRead(addr);
+	}
     else if (addr >= 0x4016 && addr <= 0x4017)
     {
         data = (controller_state[addr & 0x0001] & 0x80) > 0;
@@ -85,6 +95,7 @@ void NesBus::reset()
 {
     cpu->Reset();
     ppu->reset();
+    apu->reset();
     sysClockCounter = 0;
 }
 void NesBus::clock()
@@ -99,6 +110,9 @@ void NesBus::clock()
     // about is equivalent to the PPU clock. So the PPU is clocked
     // each time this function is called.
     ppu->clock();
+
+	// ...also clock the APU
+	apu->clock();
 
     // The CPU runs 3 times slower than the PPU so we only call its
     // clock() function every 3 times this function is called. We

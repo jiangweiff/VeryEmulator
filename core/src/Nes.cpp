@@ -19,7 +19,15 @@ std::map<SDL_Scancode, uint8_t> keyMapper = {
 bool Nes::Initialize()
 {
     bus = new NesBus();
+    audioSystem.Initialize(44100, 1);
+    SetSampleFrequency(44100);
     return true;
+}
+
+void Nes::SetSampleFrequency(uint32_t sample_rate)
+{
+	dAudioTimePerSystemSample = 1.0 / (double)sample_rate;
+	dAudioTimePerNESClock = 1.0 / 5369318.0; // PPU Clock Frequency
 }
 
 bool Nes::LoadGame(const std::string& filename)
@@ -39,8 +47,20 @@ int Nes::Tick()
         bus->controller[0] |= (keystates[i.first] ? i.second : 0); 
     }
 
+    AudioQueue::BatchWriter audioWriter(audioSystem);
     do {
         bus->clock();
+        // Synchronising with Audio
+        dAudioTime += dAudioTimePerNESClock;
+        if (dAudioTime >= dAudioTimePerSystemSample)
+        {
+            dAudioTime -= dAudioTimePerSystemSample;
+            double s = std::min(std::max(bus->apu->GetOutputSample(), -1.0), 1.0);
+            std::cout << s;
+            int16_t sample = s * 0x7FFF;
+            // audioSystem.PushSamples(&sample, 1);
+            audioWriter.PushSample(sample);
+        }
     } while(!bus->ppu->frame_complete);
     bus->ppu->frame_complete = false;
 

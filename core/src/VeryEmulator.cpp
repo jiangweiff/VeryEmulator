@@ -47,7 +47,7 @@ SDLMAIN_DECLSPEC int SDL_main(int argc, char *argv[])
 	const int winHeight = 768;
 
 	const uint32_t winFlags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
-	auto m_window = SDL_CreateWindow( "PSX Emulator", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, winWidth, winHeight, winFlags );
+	auto m_window = SDL_CreateWindow( "Very Emulator", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, winWidth, winHeight, winFlags );
 	if ( m_window == nullptr )
 	{
 		// LogError( "Failed to create SDL window [%s]", SDL_GetError() );

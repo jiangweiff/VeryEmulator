@@ -2,6 +2,7 @@
 #include "stdx/type_traits.h"
 #include "NesCPU.h"
 #include "NesPPU.h"
+#include "NesAPU.h"
 #include "NesRom.h"
 
 class NesBus
@@ -9,6 +10,7 @@ class NesBus
 public:
     NesCPU* cpu;
     NesPPU* ppu;
+	NesAPU* apu;
     NesRom* rom;
     uint8_t cpuRam[2048] = {0};
     uint8_t controller[2] = {0};
@@ -45,4 +47,6 @@ public:
     bool loadRom(NesRom* rom);
     void reset();
     void clock();
+
+
 };
