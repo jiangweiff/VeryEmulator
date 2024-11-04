@@ -70,5 +70,8 @@ void ImGuiNesDebug(Nes* nes)
     DrawRam(nes->bus, 0x0000, 16, 16);
     DrawVram(nes->bus, 0x2000, 16, 16);
     DrawCpu(nes->bus);
+
+    ImGui::Text("Audio: %f", nes->bus->apu->GetOutputSample());
+
     ImGui::End();
 }

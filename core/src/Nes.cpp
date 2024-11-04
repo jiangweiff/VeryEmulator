@@ -3,6 +3,8 @@
 #include "NesRom.h"
 #include "Renderer.h"
 #include "SDL.h"
+#include <chrono>
+using namespace std::chrono;
 
 std::map<SDL_Scancode, uint8_t> keyMapper = {
     {SDL_SCANCODE_X, 0x80},
@@ -21,6 +23,9 @@ bool Nes::Initialize()
     bus = new NesBus();
     audioSystem.Initialize(44100, 1);
     SetSampleFrequency(44100);
+
+    dAudioRealTime = duration_cast< milliseconds >(
+        system_clock::now().time_since_epoch()).count() / 1000.0;
     return true;
 }
 
@@ -56,13 +61,23 @@ int Nes::Tick()
         {
             dAudioTime -= dAudioTimePerSystemSample;
             double s = std::min(std::max(bus->apu->GetOutputSample(), -1.0), 1.0);
-            std::cout << s;
             int16_t sample = s * 0x7FFF;
-            // audioSystem.PushSamples(&sample, 1);
             audioWriter.PushSample(sample);
+
+            // calculate audio frames
+            // double timeNow = duration_cast< milliseconds >(
+            //     system_clock::now().time_since_epoch()).count() / 1000.0;
+            // int audioRealFrames = (timeNow - dAudioRealTime)/dAudioTimePerSystemSample;
+            // for(int i = 0; i < audioRealFrames; ++i) {
+            //     audioWriter.PushSample(sample);
+            //     dAudioRealTime = timeNow;
+            // }
         }
     } while(!bus->ppu->frame_complete);
     bus->ppu->frame_complete = false;
+
+    // dAudioRealTime = duration_cast< milliseconds >(
+    //     system_clock::now().time_since_epoch()).count() / 1000.0;
 
     return 0;
 }

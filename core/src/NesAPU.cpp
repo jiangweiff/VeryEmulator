@@ -268,7 +268,7 @@ void NesAPU::clock()
 			pulse2_sweep.clock(pulse2_seq.reload, 1);
 		}
 
-	//	if (bUseRawMode)
+		if (bUseRawMode)
 		{
 			// Update Pulse1 Channel ================================
 			pulse1_seq.clock(pulse1_enable, [](uint32_t &s)
@@ -276,22 +276,20 @@ void NesAPU::clock()
 				// Shift right by 1 bit, wrapping around
 				s = ((s & 0x0001) << 7) | ((s & 0x00FE) >> 1);
 			});
-
-		//	pulse1_sample = (double)pulse1_seq.output;
+			pulse1_sample = (double)pulse1_seq.output;
 		}
-		//else
+		else
 		{
 			pulse1_osc.frequency = 1789773.0 / (16.0 * (double)(pulse1_seq.reload + 1));
 			pulse1_osc.amplitude = (double)(pulse1_env.output -1) / 16.0;
 			pulse1_sample = pulse1_osc.sample(dGlobalTime);
-
 			if (pulse1_lc.counter > 0 && pulse1_seq.timer >= 8 && !pulse1_sweep.mute && pulse1_env.output > 2)
 				pulse1_output += (pulse1_sample - pulse1_output) * 0.5;
 			else
 				pulse1_output = 0;
 		}
 
-		//if (bUseRawMode)
+		if (bUseRawMode)
 		{
 			// Update Pulse1 Channel ================================
 			pulse2_seq.clock(pulse2_enable, [](uint32_t &s)
@@ -299,11 +297,9 @@ void NesAPU::clock()
 					// Shift right by 1 bit, wrapping around
 					s = ((s & 0x0001) << 7) | ((s & 0x00FE) >> 1);
 				});
-
-		//	pulse2_sample = (double)pulse2_seq.output;
-
+			pulse2_sample = (double)pulse2_seq.output;
 		}
-	//	else
+		else
 		{
 			pulse2_osc.frequency = 1789773.0 / (16.0 * (double)(pulse2_seq.reload + 1));
 			pulse2_osc.amplitude = (double)(pulse2_env.output-1) / 16.0;
@@ -314,7 +310,6 @@ void NesAPU::clock()
 			else
 				pulse2_output = 0;
 		}
-
 
 		noise_seq.clock(noise_enable, [](uint32_t &s)
 			{
@@ -347,8 +342,8 @@ double NesAPU::GetOutputSample()
 {
 	if (bUseRawMode)
 	{
-		return (pulse1_sample - 0.5) * 0.5
-			+ (pulse2_sample - 0.5) * 0.5;
+		return 95.88 / (100.0 + (8128.0 / ( pulse1_env.output + pulse2_env.output )));
+		// return (pulse1_sample - 0.5) * 0.5 + (pulse2_sample - 0.5) * 0.5;
 	}
 	else
 	{
