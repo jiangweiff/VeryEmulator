@@ -4,7 +4,7 @@ NesBus::NesBus()
 {
     cpu = new NesCPU();
     ppu = new NesPPU();
-    apu = new NesAPU();
+    apu = new NesAPU2();
     cpu->ConnectBus(this);
 }
 

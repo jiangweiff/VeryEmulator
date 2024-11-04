@@ -60,7 +60,7 @@ int Nes::Tick()
         if (dAudioTime >= dAudioTimePerSystemSample)
         {
             dAudioTime -= dAudioTimePerSystemSample;
-            double s = std::min(std::max(bus->apu->GetOutputSample(), -1.0), 1.0);
+            double s = bus->apu->GetOutputSample();
             int16_t sample = s * 0x7FFF;
             audioWriter.PushSample(sample);
 
