@@ -1,17 +1,24 @@
 #include "NesAPU2.h"
 
-uint8_t NesAPU2::length_table[] = {  10, 254, 20,  2, 40,  4, 80,  6,
+const uint8_t LENGTH_TABLE[] = {  10, 254, 20,  2, 40,  4, 80,  6,
 							        160,   8, 60, 10, 14, 12, 26, 14,
 							         12,  16, 24, 18, 48, 20, 96, 22,
 							        192,  24, 72, 26, 16, 28, 32, 30 };
 
 // Duty cycle values. There are 4 modes, which silence different percentages of
 // the square wave.
-uint8_t NesAPU2::duty_table[4][8] = {
+const uint8_t DUTY_TABLE[4][8] = {
     {0, 1, 0, 0, 0, 0, 0, 0},  // 12.5%
     {0, 1, 1, 0, 0, 0, 0, 0},  // 25%
     {0, 1, 1, 1, 1, 0, 0, 0},  // 50%
     {1, 0, 0, 1, 1, 1, 1, 1},  // 75%
+};
+
+const uint16_t TIMER_TABLE[16] = {
+    0x004, 0x008, 0x010, 0x020,
+    0x040, 0x060, 0x080, 0x0a0,
+    0x0ca, 0x0fe, 0x17c, 0x1fc,
+    0x2fa, 0x3f8, 0x7f2, 0xfe4,
 };
 
 void NesAPU2::SquareWave::reset()
@@ -62,7 +69,7 @@ uint8_t NesAPU2::SquareWave::signal()
         return 0;
     }
 
-    if (duty_table[duty_mode][duty_value] == 0) {
+    if (DUTY_TABLE[duty_mode][duty_value] == 0) {
         return 0;
     }
 
@@ -202,10 +209,128 @@ void NesAPU2::SquareWave::write_timer_high(uint8_t data)
     auto length_index = (data & 0b11111000) >> 3;
     uint16_t period_high  = (data & 0b00000111);
 
-    length_value = length_table[length_index];
+    length_value = LENGTH_TABLE[length_index];
     timer_period = (timer_period & 0x00ff) | (period_high << 8);
     envelope_start = true;
     duty_value = 0;
+}
+
+uint8_t NesAPU2::Noise::signal()
+{
+    if (!enabled) {
+        return 0;
+    }
+
+    if (length_value == 0) {
+        return 0;
+    }
+
+    // When bit 0 of the shift register is set, the DAC receives 0.
+    if (shift_register & 1) {
+        return 0;
+    }
+
+    if (envelope_enabled) {
+        return envelope_volume;
+    } else {
+        return constant_volume;
+    }
+}
+
+void NesAPU2::Noise::reset()
+{
+    enabled = false;
+    length_enabled = false;
+    length_value = 0;
+    envelope_enabled = false;
+    envelope_start = false;
+    envelope_loop = false;
+    envelope_volume = 0;
+    envelope_period = 0;
+    envelope_value = 0;
+    constant_volume = 0;
+    timer_period = 0;
+    timer_value = 0;
+    shift_mode = 1;
+    shift_register = 1;
+}
+
+void NesAPU2::Noise::step_envelope()
+{
+    if (envelope_start) {
+        envelope_volume = 15;
+        // The divider's period is set to n + 1.
+        envelope_value = envelope_period + 1;
+        envelope_start = false;
+    } else if (envelope_value) {
+        envelope_value -= 1;
+    } else {
+        if (envelope_volume) {
+            envelope_volume -= 1;
+        } else if (envelope_loop) {
+            envelope_volume = 15;
+        }
+        envelope_value = envelope_period + 1;
+    }
+}
+
+void NesAPU2::Noise::step_length()
+{
+    if (length_enabled && length_value) {
+        length_value -= 1;
+    }
+}
+
+void NesAPU2::Noise::step_timer()
+{
+    if (timer_value == 0) {
+        timer_value = timer_period;
+
+        // When the timer clocks the shift register, the following actions
+        // occur in order:
+        //
+        // 1. Feedback is calculated as the exclusive-OR of bit 0 and one
+        //    other bit: bit 6 if Mode flag is set, otherwise bit 1.
+        // 2. The shift register is shifted right by one bit.
+        // 3. Bit 14, the leftmost bit, is set to the feedback calculated
+        //    earlier.
+        auto feedback = (shift_register & 1) ^ ((shift_register >> shift_mode) & 1);
+        shift_register >>= 1;
+        shift_register |= feedback << 14;
+    } else {
+        timer_value -= 1;
+    }
+}
+
+// $400c
+void NesAPU2::Noise::write_control(uint8_t val)
+{
+    // --le nnnn   loop env/disable length, env disable, vol/env period
+    envelope_loop    = (val & 0b00100000) != 0;
+    length_enabled   = (val & 0b00100000) == 0;
+    envelope_enabled = (val & 0b00010000) == 0;
+    envelope_period  =  val & 0b00001111;
+    constant_volume  =  val & 0b00001111;
+    envelope_start   = true;
+}
+
+// $400e
+//
+// The noise channel and DMC use lookup tables to set the timer's period.
+void NesAPU2::Noise::write_mode(uint8_t val)
+{
+    // s--- pppp   short mode, period index
+    val & 0x80 ? shift_mode = 1 : shift_mode = 6;
+
+    auto period_index = val & 0b00001111;
+    timer_period = TIMER_TABLE[period_index];
+}
+
+// $400f
+void NesAPU2::Noise::write_length_index(uint8_t val) {
+    // llll l---   length index
+    auto length_index = val >> 3;
+    length_value = LENGTH_TABLE[length_index];
 }
 
 NesAPU2::NesAPU2()
@@ -221,6 +346,7 @@ void NesAPU2::reset()
 {
     square1.reset();
     square2.reset();
+    noise.reset();
 }
 
 void NesAPU2::cpuWrite(uint16_t addr, uint8_t data)
@@ -270,14 +396,14 @@ void NesAPU2::cpuWrite(uint16_t addr, uint8_t data)
 
 	case 0x400F:
 		// noise_env.start = true;
-		// noise_lc.counter = length_table[(data & 0xF8) >> 3];
+		// noise_lc.counter = LENGTH_TABLE[(data & 0xF8) >> 3];
 		break;
 
 	case 0x4015: // APU STATUS
         square1.enabled  = data & 0b00000001;
         square2.enabled  = data & 0b00000010;
         // triangle.enabled = (val & 0b0000_0100) != 0;
-        // noise.enabled    = (val & 0b0000_1000) != 0;
+        noise.enabled    = (data & 0b00001000) != 0;
         // dmc.enabled      = (val & 0b0001_0000) != 0;
 
         if (!square1.enabled) {
@@ -292,9 +418,9 @@ void NesAPU2::cpuWrite(uint16_t addr, uint8_t data)
         //     triangle.length_value = 0;
         // }
 
-        // if !self.noise.enabled {
-        //     self.noise.length_value = 0;
-        // }
+        if (!noise.enabled) {
+            noise.length_value = 0;
+        }
 
         // if self.dmc.enabled {
         //     if self.dmc.current_length == 0 {
@@ -330,9 +456,9 @@ uint8_t NesAPU2::cpuRead(uint16_t addr)
     //     rv |= 4;
     // }
 
-    // if self.noise.length_value > 0 {
-    //     rv |= 8;
-    // }
+    if (noise.length_value > 0) {
+        data |= 8;
+    }
 
     // if self.dmc.buffer != 0 {
     //     rv |= 16;
@@ -369,7 +495,7 @@ void NesAPU2::step_envelopes()
     square1.step_envelope();
     square2.step_envelope();
     // triangle.step_counter();
-    // noise.step_envelope();
+    noise.step_envelope();
 }
         
 void NesAPU2::step_sweeps()
@@ -383,7 +509,7 @@ void NesAPU2::step_lengths()
     square1.step_length();
     square2.step_length();
     // self.triangle.step_length();
-    // self.noise.step_length();
+    noise.step_length();
 }
 
 void NesAPU2::step_timers()
@@ -396,7 +522,7 @@ void NesAPU2::step_timers()
     if (cycles % 2 == 0) {
         square1.step_timer();
         square2.step_timer();
-        // self.noise.step_timer();
+        noise.step_timer();
         // self.dmc.step_timer();
     }
 }
@@ -501,9 +627,24 @@ void NesAPU2::clock()
 
 double NesAPU2::GetOutputSample()
 {
-    double pulse_out = square1.signal() + square2.signal();
-    return pulse_out * 0.00752;
-    double pulse_val = 95.88 / (100.0 + (8128.0 / pulse_out));    
+    // https://www.nesdev.org/wiki/APU_Mixer
+    double pulse = square1.signal() + square2.signal();
+    double n = noise.signal();
+    double tr = 0;
+    double dmc = 0;
+
+    //** linear approximation
+    // double pulse_out = 0.00752 * pulse;
+    // double tnd_out = 0.00851 * tr + 0.00494 * n + 0.00335 * dmc;
+    
+
+    double pulse_out = 95.88 / (100.0 + (8128.0 / pulse));
+    double tnd_out = 159.79 / (100.0
+                            + (1.0 / (  (tr / 8227.0)
+                                        + (n / 12241.0)
+                                        + (dmc / 22638.0))));
+
+    return pulse_out + tnd_out;    
     // return passFilters[2].process(passFilters[1].process(passFilters[0].process(pulse_val)));
     // return passFilters[0].process(passFilters[1].process(passFilters[2].process(pulse_val)));
 }

@@ -22,9 +22,6 @@ public:
 	double GetOutputSample();
 
 private:
-	static uint8_t length_table[32];
-	static uint8_t duty_table[4][8];
-
     struct SquareWave
     {
         bool enabled;
@@ -69,6 +66,36 @@ private:
 
     SquareWave square1;
     SquareWave square2;
+    
+    struct Noise {
+        bool enabled;      
+        bool length_enabled;
+        uint8_t length_value;
+
+        bool envelope_enabled;
+        bool envelope_start;
+        bool envelope_loop;
+        uint8_t envelope_volume;
+        uint8_t envelope_period;
+        uint8_t envelope_value;
+        uint8_t constant_volume;
+
+        uint16_t timer_period;
+        uint16_t timer_value;
+        
+        uint8_t shift_mode;
+        uint16_t shift_register;
+    public:
+        void reset();
+        uint8_t signal();
+        void step_envelope();
+        void step_length();
+        void step_timer();
+        void write_control(uint8_t data);
+        void write_mode(uint8_t data);
+        void write_length_index(uint8_t data);
+    };
+    Noise noise;
 
     struct PassFilter
     {
