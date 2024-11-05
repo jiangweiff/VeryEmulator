@@ -501,7 +501,9 @@ void NesAPU2::clock()
 
 double NesAPU2::GetOutputSample()
 {
-    double pulse_val = 95.88 / (100.0 + (8128.0 / ( square1.signal() + square2.signal())));    
+    double pulse_out = square1.signal() + square2.signal();
+    return pulse_out * 0.00752;
+    double pulse_val = 95.88 / (100.0 + (8128.0 / pulse_out));    
     // return passFilters[2].process(passFilters[1].process(passFilters[0].process(pulse_val)));
-    return passFilters[0].process(passFilters[1].process(passFilters[2].process(pulse_val)));
+    // return passFilters[0].process(passFilters[1].process(passFilters[2].process(pulse_val)));
 }

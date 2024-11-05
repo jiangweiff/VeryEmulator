@@ -111,9 +111,6 @@ void NesBus::clock()
     // each time this function is called.
     ppu->clock();
 
-	// ...also clock the APU
-	apu->clock();
-
     // The CPU runs 3 times slower than the PPU so we only call its
     // clock() function every 3 times this function is called. We
     // have a global counter to keep track of this.
@@ -161,6 +158,8 @@ void NesBus::clock()
             }
         } else {
             cpu->clock();
+            // clock the APU
+            apu->clock();
         }
     }
 
