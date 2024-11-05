@@ -2,6 +2,8 @@
 
 #include <cstdint>
 
+class NesCPU;
+
 enum SequencerMode{
     FourStep,
     FiveStep
@@ -16,7 +18,7 @@ public:
 public:
 	void cpuWrite(uint16_t addr, uint8_t data);
 	uint8_t cpuRead(uint16_t addr);
-	void clock();
+	void clock(NesCPU *cpu);
 	void reset();
 
 	double GetOutputSample();
@@ -97,6 +99,65 @@ private:
     };
     Noise noise;
 
+    struct TriangleWave {
+        bool enabled;
+
+        bool length_enabled;
+        uint8_t length_value;
+
+        bool counter_reload;
+        uint8_t counter_period;
+        uint8_t counter_value;
+
+        uint16_t timer_value;
+        uint16_t timer_period;
+        uint8_t duty_value;
+    public:
+        void reset();
+        uint8_t signal();
+        void step_length();
+        void step_timer();
+        void step_counter();
+        void write_control(uint8_t data);
+        void write_timer_low(uint8_t data);
+        void write_timer_high(uint8_t data);        
+    };
+    TriangleWave triangle;
+
+    struct DMC {
+        bool enabled;
+
+        uint8_t buffer;
+
+        bool irq_enabled;
+        bool irq_flag;
+
+        bool dmc_loop;
+        uint8_t bit_count;
+        uint8_t shift_register;
+
+        uint16_t sample_address;
+        uint16_t current_address;
+        uint16_t sample_length;
+        uint16_t current_length;
+
+        uint16_t timer_period;
+        uint16_t timer_value;
+    public:
+        void reset();
+        uint8_t signal();
+        void write_control(uint8_t val);
+        void write_dac(uint8_t val);
+        void write_address(uint8_t val);
+        void write_length(uint8_t val);
+        void step_reader(NesCPU *cpu);
+        void step_shifter();
+        void step_timer(NesCPU *cpu);
+        bool get_irq_flag() { return irq_flag; }
+        void clear_irq_flag() { irq_flag = false; }
+    };
+    DMC dmc;
+
     struct PassFilter
     {
         double b0;
@@ -152,6 +213,6 @@ private:
     void step_envelopes();
     void step_sweeps();
     void step_lengths();
-    void step_timers();
+    void step_timers(NesCPU *cpu);
     void step_sequencer();
 };

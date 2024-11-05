@@ -159,7 +159,7 @@ void NesBus::clock()
         } else {
             cpu->clock();
             // clock the APU
-            apu->clock();
+            apu->clock(cpu);
         }
     }
 
