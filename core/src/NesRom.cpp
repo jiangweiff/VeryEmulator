@@ -688,7 +688,7 @@ public:
     {
         return false;
     }
-	void reset() override
+	virtual void reset() override
     {
         nTargetRegister = 0x00;
         bPRGBankMode = false;
@@ -898,6 +898,7 @@ NesRom::NesRom(const std::string& sFileName)
 		case  66: pMapper = std::make_shared<Mapper_066>(nPRGBanks, nCHRBanks); break;
 
 		}
+        pMapper->reset();
 
 		bImageValid = true;
 		ifs.close();

@@ -22,7 +22,6 @@ public:
     {
         nPRGBanks = prgBanks;
         nCHRBanks = chrBanks;
-        reset();
     }
 	~Mapper()
     {       
@@ -38,7 +37,7 @@ public:
 	virtual bool ppuMapWrite(uint16_t addr, uint32_t &mapped_addr)	 = 0;
 
 	// Reset mapper to known state
-	virtual void reset(){};
+	virtual void reset() = 0;
 
 	// Get Mirror mode if mapper is in control
 	virtual MIRROR mirror() { return MIRROR::HARDWARE; }

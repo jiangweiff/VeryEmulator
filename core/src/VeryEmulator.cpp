@@ -94,7 +94,7 @@ SDLMAIN_DECLSPEC int SDL_main(int argc, char *argv[])
 
     Nes* nes = new Nes();
     nes->Initialize();
-    nes->LoadGame("Roms/Contra (U).nes");
+    nes->LoadGame("Roms/kage.nes");
     // nes->LoadGame("Roms/nestest.nes");
 
 	bool show_demo_window;

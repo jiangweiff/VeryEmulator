@@ -96,6 +96,7 @@ void NesBus::reset()
     cpu->Reset();
     ppu->reset();
     apu->reset();
+    rom->reset();
     sysClockCounter = 0;
 }
 void NesBus::clock()
